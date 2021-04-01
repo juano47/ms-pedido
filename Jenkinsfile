@@ -33,6 +33,7 @@ pipeline {
                     reportFiles: 'index.html',
                     reportName: 'Site'
                 ])
+                step([$class: 'CordellWalkerRecorder'])
             }
         }
     }
