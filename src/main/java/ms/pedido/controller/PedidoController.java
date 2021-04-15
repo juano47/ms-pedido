@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.stream.IntStream;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,37 +22,41 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import ms.pedido.domain.DetallePedido;
 import ms.pedido.domain.Pedido;
+import ms.pedido.service.PedidoService;
+import ms.usuario.domain.Cliente;
 
 @RestController
 @RequestMapping("api/pedido")
 @Api(value="PedidoController", description= "Permite gestionar los pedidos")
 public class PedidoController {
 
-	private static final List<Pedido> listaPedidos = new ArrayList<>();
-	private static Integer ID_GEN = 1;
+
+	@Autowired
+	PedidoService pedidoService;
 	
 	@PostMapping
 	@ApiOperation(value="Crea un pedido")
 	public ResponseEntity<Pedido> crear(@RequestBody Pedido nuevo){
+		//validar pedido antes de guardar!!
 		System.out.println("Pedido: "+nuevo);
-		nuevo.setId(ID_GEN++);
-		listaPedidos.add(nuevo);
+		nuevo = pedidoService.save(nuevo);
 		return ResponseEntity.ok(nuevo);
 	}
 	
 	
 	@PostMapping(path = "/{idPedido}/detalle}")
-	@ApiOperation(value="Agregar un detale a un pedido")
+	@ApiOperation(value="Agregar un detalle a un pedido")
 	public ResponseEntity<DetallePedido> agregarDetalle(@RequestBody DetallePedido nuevoDetalle,
 			@PathVariable Integer idPedido){
 		
-		Optional<Pedido> p= listaPedidos.stream()
-				.filter(unPedido -> unPedido.getId().equals(idPedido))
-				.findFirst();
+		Optional<Pedido> pedido = pedidoService.findPedidoById(idPedido);
 		
-		p.get().getDetalle().add(nuevoDetalle);
-		
-		return ResponseEntity.ok(nuevoDetalle);
+		if(pedido.isPresent()) {
+			pedidoService.updateDetallePedido(pedido, nuevoDetalle);
+			return ResponseEntity.ok(nuevoDetalle);
+		}else {
+			return ResponseEntity.notFound().build();
+		}
 	}
 	
 	@PutMapping(path="/{idPedido}")
@@ -59,34 +64,26 @@ public class PedidoController {
 	public ResponseEntity<Pedido> actualizar(@RequestBody Pedido pedido, 
 			@PathVariable Integer idPedido){
 		
-		OptionalInt indexOpt= IntStream.range(0, listaPedidos.size())
-				.filter(i -> listaPedidos.get(i).getId().equals(idPedido))
-				.findFirst();
-		
-		if(indexOpt.isPresent()) {
-			listaPedidos.set(indexOpt.getAsInt(), pedido);
-			return ResponseEntity.ok(pedido);
-		}
-		else {
-			return ResponseEntity.notFound().build();
-		}
+		Optional<Pedido> pedidoDb = pedidoService.findPedidoById(idPedido);
+        if(pedidoDb.isPresent()){
+            pedidoService.update(pedidoDb.get(), pedido);
+            return ResponseEntity.ok(pedido);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
 	}
 	
 	@DeleteMapping(path="/{idPedido}")
 	@ApiOperation(value="Borra un pedido")
 	public ResponseEntity<Pedido> borrar(@PathVariable Integer idPedido){
 		
-		OptionalInt indexOpt= IntStream.range(0, listaPedidos.size())
-				.filter(i -> listaPedidos.get(i).getId().equals(idPedido))
-				.findFirst();
-		
-		if(indexOpt.isPresent()) {
-			listaPedidos.remove(indexOpt.getAsInt());
-			return ResponseEntity.ok().build();
-		}
-		else {
-			return ResponseEntity.notFound().build();
-		}
+		Optional<Pedido> pedidoDb = pedidoService.findPedidoById(idPedido);
+        if(pedidoDb.isPresent()){
+        	pedidoService.delete(idPedido);
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
 	}
 	
 	@DeleteMapping(path="/{idPedido}/detalle/{idDetalle}")
