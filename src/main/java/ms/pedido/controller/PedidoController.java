@@ -21,9 +21,9 @@ import org.springframework.web.bind.annotation.RestController;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import ms.pedido.domain.DetallePedido;
+import ms.pedido.domain.EstadoPedido;
 import ms.pedido.domain.Pedido;
 import ms.pedido.service.PedidoService;
-import ms.usuario.domain.Cliente;
 
 @RestController
 @RequestMapping("api/pedido")
@@ -34,13 +34,24 @@ public class PedidoController {
 	@Autowired
 	PedidoService pedidoService;
 	
+	
 	@PostMapping
 	@ApiOperation(value="Crea un pedido")
-	public ResponseEntity<Pedido> crear(@RequestBody Pedido nuevo){
-		//validar pedido antes de guardar!!
-		System.out.println("Pedido: "+nuevo);
-		nuevo = pedidoService.save(nuevo);
-		return ResponseEntity.ok(nuevo);
+	public ResponseEntity<String> crear(@RequestBody Pedido nuevo){
+		if(nuevo.getObra()!=null) {
+			System.out.println("Pedido: "+nuevo);
+			try {
+				nuevo = pedidoService.save(nuevo);
+			}
+			catch(Exception e) {
+				return ResponseEntity.status(200).body(e.getMessage());
+			}
+			return ResponseEntity.ok("EL PEDIDO SE HA CREAD CON EXITO");
+		}
+		else {
+			return ResponseEntity.badRequest().body("EL PEDIDO DEBE CONTENER DATOS DE LA OBRA");
+		}
+		
 	}
 	
 	
@@ -79,7 +90,7 @@ public class PedidoController {
 		
 		Optional<Pedido> pedidoDb = pedidoService.findPedidoById(idPedido);
         if(pedidoDb.isPresent()){
-        	pedidoService.delete(idPedido);
+        	pedidoService.delete(pedidoDb.get());
             return ResponseEntity.ok().build();
         } else {
             return ResponseEntity.notFound().build();
@@ -90,49 +101,37 @@ public class PedidoController {
 	@ApiOperation(value="Borra el detalle de un pedido")
 	public ResponseEntity<DetallePedido> borrarDetalle(@PathVariable Integer idPedido, @PathVariable Integer idDetalle){
 		
-		OptionalInt indexOpt= IntStream.range(0, listaPedidos.size())
-				.filter(i -> listaPedidos.get(i).getId().equals(idPedido))
-				.findFirst();
-		
-		if(indexOpt.isPresent()) {
-			OptionalInt indexOptDetalle= IntStream.range(0, listaPedidos.get(indexOpt.getAsInt()).getDetalle().size())
-					.filter(i -> listaPedidos.get(indexOpt.getAsInt()).getDetalle().get(i).getId().equals(idDetalle))
-					.findFirst();
-			
-			if(indexOptDetalle.isPresent()) {
-				listaPedidos.get(indexOpt.getAsInt()).getDetalle().remove(indexOptDetalle.getAsInt());
-				
-				return ResponseEntity.ok().build();
-			}
-			else {
-				return ResponseEntity.notFound().build();
-			}
+		try {
+			pedidoService.deleteDetallePedido(idPedido, idDetalle);
 		}
-		else {
+		catch(Exception e) {
 			return ResponseEntity.notFound().build();
 		}
+		
+		return ResponseEntity.ok().build();
 	}
 	
 	@GetMapping(path="/{idPedido}")
 	@ApiOperation(value="Busca un pedido por ID")
 	public ResponseEntity<Pedido> pedidoPorId(@PathVariable Integer idPedido){
 		
-		Optional<Pedido> p= listaPedidos.stream()
-				.filter(unPedido -> unPedido.getId().equals(idPedido))
-				.findFirst();
+		Optional<Pedido> p= pedidoService.findPedidoById(idPedido);
+		
+		if(p==null) {
+			return ResponseEntity.notFound().build();
+		}
 		
 		return ResponseEntity.of(p);
 	}
 	
 	@GetMapping(path="/obra/{idObra}")
 	@ApiOperation(value="Busca un pedido por ID de obra")
-	public ResponseEntity<Pedido> pedidoPorIdObra(@PathVariable Integer idObra){
+	public ResponseEntity<List<Pedido>> pedidoPorIdObra(@PathVariable Integer idObra){
 		
-		Optional<Pedido> p= listaPedidos.stream()
-				.filter(unPedido -> unPedido.getObra().getId().equals(idObra))
-				.findFirst();
+		//Por ahroa retorna una lista vacía porque no puedo implementar querys personalizadas
+		List<Pedido> pedidos= pedidoService.findPedidoByIdObra(idObra);
 		
-		return ResponseEntity.of(p);
+		return ResponseEntity.ok(pedidos);
 	}
 	
 	@GetMapping(params = {"cuit", "idCliente"})

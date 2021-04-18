@@ -1,5 +1,6 @@
 package ms.pedido.service;
 
+import java.util.List;
 import java.util.Optional;
 
 import ms.pedido.domain.DetallePedido;
@@ -7,7 +8,7 @@ import ms.pedido.domain.Pedido;
 
 public interface PedidoService {
 
-	Pedido save(Pedido nuevo);
+	Pedido save(Pedido nuevo) throws Exception;
 
 	Optional<Pedido> findPedidoById(Integer idPedido);
 
@@ -15,6 +16,9 @@ public interface PedidoService {
 
 	void update(Pedido pedido, Pedido pedido2);
 
-	void delete(Integer idPedido);
-
+	void delete(Pedido pedido);
+	
+	void deleteDetallePedido(Integer idPedido, Integer idDetalle) throws Exception;
+	
+	List<Pedido> findPedidoByIdObra(Integer idObra);
 }
