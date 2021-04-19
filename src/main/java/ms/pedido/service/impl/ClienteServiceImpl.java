@@ -19,4 +19,9 @@ public class ClienteServiceImpl implements ClienteService{
 		return true;
 	}
 
+	@Override
+	public Integer findObraByIdClienteOrCuit(Integer idCliente, Integer cuit) {
+		return 1;
+	}
+
 }

@@ -20,10 +20,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import ms.pedido.dao.PedidoRepository;
 import ms.pedido.domain.DetallePedido;
 import ms.pedido.domain.EstadoPedido;
 import ms.pedido.domain.Pedido;
+import ms.pedido.service.ClienteService;
 import ms.pedido.service.PedidoService;
+import ms.pedido.service.impl.ClienteServiceImpl;
 
 @RestController
 @RequestMapping("api/pedido")
@@ -33,6 +36,9 @@ public class PedidoController {
 
 	@Autowired
 	PedidoService pedidoService;
+	
+	@Autowired
+	ClienteService clienteService;
 	
 	
 	@PostMapping
@@ -136,34 +142,39 @@ public class PedidoController {
 	
 	@GetMapping(params = {"cuit", "idCliente"})
 	@ApiOperation(value="Busca pedido por cuit y/o ID del cliente")
-	public ResponseEntity<Pedido> obtenerEmpleados(@RequestParam (required = false) Integer cuit, 
+	public ResponseEntity<List<Pedido>> obtenerEmpleados(@RequestParam (required = false) Integer cuit, 
 			@RequestParam (required=false) Integer idCliente){
 		
-		//no se como llegar del pedido al cliente
+		Integer idObra= clienteService.findObraByIdClienteOrCuit(idCliente, cuit);
 		
-		return null;
+		if(idObra!=null) {
+			List<Pedido> pedidos= pedidoService.findPedidoByIdObra(idObra);
+			return ResponseEntity.ok(pedidos);
+		}
+		else {
+			return ResponseEntity.notFound().build();
+		}
 	}
 	
 	@GetMapping(path="/{idPedido}/detalle/{idDetalle}")
 	@ApiOperation(value="Busca un detalle de un pedido por ID")
 	public ResponseEntity<DetallePedido> detallePorId(@PathVariable Integer idPedido, @PathVariable Integer idDetalle){
 		
-		OptionalInt indexOpt= IntStream.range(0, listaPedidos.size())
-				.filter(i -> listaPedidos.get(i).getId().equals(idPedido))
-				.findFirst();
+		Optional<Pedido> p = pedidoService.findPedidoById(idPedido);
 		
-		if(indexOpt.isPresent()) {
-			
-			Optional<DetallePedido> dp= listaPedidos.get(indexOpt.getAsInt()).getDetalle().stream()
-					.filter(unDetalle -> unDetalle.getId().equals(idDetalle))
-					.findFirst();
-			
-			return ResponseEntity.of(dp);
-			
+		if(p.isPresent()) {
+			try {
+				DetallePedido detalle= pedidoService.findDetallePedidoById(p.get(), idDetalle);
+				return ResponseEntity.ok(detalle);
+			}
+			catch(Exception e) {
+				return ResponseEntity.notFound().build();
+			}
 		}
 		else {
 			return ResponseEntity.notFound().build();
 		}
+		
 		
 	}
 }

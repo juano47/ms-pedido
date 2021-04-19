@@ -124,7 +124,27 @@ public class PedidoServiceImpl implements PedidoService {
 		
 		return pedidos;
 	}
-	
-	
 
+	@Override
+	public DetallePedido findDetallePedidoById(Pedido p, Integer idDetallePedido) throws Exception {
+		
+		int index=-1;
+		for(int i=0; i<p.getDetalle().size(); i++) {
+			if(p.getDetalle().get(i).getId()== idDetallePedido) {
+				index=i;
+				break;
+			}
+		}
+		
+		if(index==-1) {
+			throw new Exception("NO SE ENCONTRO EL DETALLE DEL PEDIDO");
+		}
+		else {
+			return p.getDetalle().get(index);
+		}
+		
+	}
+	
+	
+	
 }

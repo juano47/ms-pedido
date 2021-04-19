@@ -7,4 +7,6 @@ public interface ClienteService {
 	public Integer findIdClienteByIdObra(Integer idObra);
 	
 	public boolean situacionCrediticia(Integer idCliente);
+	
+	public Integer findObraByIdClienteOrCuit(Integer idCliente,  Integer cuit);
 }
