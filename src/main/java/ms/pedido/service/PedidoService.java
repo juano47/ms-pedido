@@ -12,7 +12,7 @@ public interface PedidoService {
 
 	Optional<Pedido> findPedidoById(Integer idPedido);
 
-	void updateDetallePedido(Optional<Pedido> pedido, DetallePedido nuevoDetalle);
+	void guardarNuevoDetallePedido(Optional<Pedido> pedido, DetallePedido nuevoDetalle);
 
 	void update(Pedido pedido, Pedido pedido2);
 

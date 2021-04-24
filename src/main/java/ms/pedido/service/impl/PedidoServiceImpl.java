@@ -72,7 +72,7 @@ public class PedidoServiceImpl implements PedidoService {
 	}
 
 	@Override
-	public void updateDetallePedido(Optional<Pedido> pedido, DetallePedido nuevoDetalle) {
+	public void guardarNuevoDetallePedido(Optional<Pedido> pedido, DetallePedido nuevoDetalle) {
 		pedido.get().getDetalle().add(nuevoDetalle);
 		pedidoRepository.save(pedido.get());
 		

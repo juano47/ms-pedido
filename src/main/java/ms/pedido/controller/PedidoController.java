@@ -69,7 +69,7 @@ public class PedidoController {
 		Optional<Pedido> pedido = pedidoService.findPedidoById(idPedido);
 		
 		if(pedido.isPresent()) {
-			pedidoService.updateDetallePedido(pedido, nuevoDetalle);
+			pedidoService.guardarNuevoDetallePedido(pedido, nuevoDetalle);
 			return ResponseEntity.ok(nuevoDetalle);
 		}else {
 			return ResponseEntity.notFound().build();
