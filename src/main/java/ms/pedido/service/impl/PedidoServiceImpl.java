@@ -73,7 +73,15 @@ public class PedidoServiceImpl implements PedidoService {
 
 	@Override
 	public void guardarNuevoDetallePedido(Optional<Pedido> pedido, DetallePedido nuevoDetalle) {
-		pedido.get().getDetalle().add(nuevoDetalle);
+		if(pedido.get().getDetalle()!=null) {
+			pedido.get().getDetalle().add(nuevoDetalle);
+		}
+		else {
+			List<DetallePedido> listaDetalle=new ArrayList<>();
+			listaDetalle.add(nuevoDetalle);
+			pedido.get().setDetalle(listaDetalle);
+		}
+		
 		pedidoRepository.save(pedido.get());
 		
 	}
@@ -120,9 +128,7 @@ public class PedidoServiceImpl implements PedidoService {
 
 	@Override
 	public List<Pedido> findPedidoByIdObra(Integer idObra) {
-		List<Pedido> pedidos = new ArrayList<Pedido>();
-		
-		return pedidos;
+		return pedidoRepository.findByObra_Id(idObra).get();
 	}
 
 	@Override
