@@ -39,7 +39,7 @@ public class ControllerTest {
 	@LocalServerPort
 	String puerto;
 
-	private Pedido p;
+	private Pedido p= new Pedido();
 	private final String urlServer = "http://localhost";
 	private final String apiPedido = "api/pedido";
 	
@@ -59,6 +59,7 @@ public class ControllerTest {
 		detalle.setCantidad(2);
 		detalle.setProducto(producto);
 		detalle.setPrecio(detalle.getCantidad()*detalle.getProducto().getPrecio());
+		listaDetalle.add(detalle);
 		
 		p.setDetalle(listaDetalle);
 		p.setObra(obra);

@@ -1,7 +1,10 @@
 package ms.pedido.service.impl;
 
+import org.springframework.stereotype.Service;
+
 import ms.pedido.service.ClienteService;
 
+@Service
 public class ClienteServiceImpl implements ClienteService{
 
 	@Override

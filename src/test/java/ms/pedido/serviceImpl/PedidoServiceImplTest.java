@@ -65,6 +65,7 @@ public class PedidoServiceImplTest {
 		detalle.setCantidad(2);
 		detalle.setProducto(producto);
 		detalle.setPrecio(detalle.getCantidad()*detalle.getProducto().getPrecio());
+		listaDetalle.add(detalle);
 		
 		p.setDetalle(listaDetalle);
 		p.setObra(obra);
@@ -75,6 +76,9 @@ public class PedidoServiceImplTest {
 	
 	@Test
 	void savePedidoConExito(){
+		
+		when(productoService.getStock(any(Integer.class))).thenReturn(10);
+		when(clienteService.saldo(any(Integer.class))).thenReturn(500.00);
 		
 		Pedido pedidoResultado= null;
 		Exception excep=null;
@@ -112,6 +116,8 @@ public class PedidoServiceImplTest {
 	@Test
 	void deleteDetallePedidoExito() {
 		Exception excep= null;
+		
+		p.getDetalle().get(0).setId(1);
 		
 		Optional<Pedido> opt= Optional.of(p);
 		
