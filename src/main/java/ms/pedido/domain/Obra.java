@@ -20,6 +20,5 @@ public class Obra {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name="id")
     private Integer id;
-	@Column(name="id")
     private String descripcion;
 }

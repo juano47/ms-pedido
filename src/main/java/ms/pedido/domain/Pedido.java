@@ -9,6 +9,7 @@ import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -33,14 +34,13 @@ public class Pedido {
     private Instant fechaPedido;
 	
 	@ManyToOne(cascade = CascadeType.ALL)
-	@JoinColumn(name="id")
+	@JoinColumn(name="id", insertable=false, updatable=false)
     private Obra obra;
 	
 	@OneToMany(orphanRemoval = true, cascade = CascadeType.ALL)
-	@JoinColumn(name="id")
+	@JoinColumn(name="id", insertable=false, updatable=false)
     private List<DetallePedido> detalle;
     
-	@OneToOne
-	@JoinColumn(name="id")
+	@Enumerated
 	private EstadoPedido estado;
 }

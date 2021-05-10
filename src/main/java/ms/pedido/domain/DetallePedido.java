@@ -1,5 +1,7 @@
 package ms.pedido.domain;
 
+import java.io.Serializable;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -18,19 +20,18 @@ import lombok.Setter;
 @Setter
 @Entity
 @Table(name="detalle_pedido")
-public class DetallePedido {
-    
+public class DetallePedido implements Serializable {
+	
+	private static final long serialVersionUID = 1L;
+	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "id")
 	private Integer id;
-	
-	@Column(name="cantidad")
     private Integer cantidad;
-	@Column(name="cantidad")
     private Double precio;
     
 	@ManyToOne(cascade = CascadeType.ALL)
-	@JoinColumn(name = "id")
+	@JoinColumn(name = "id", insertable=false, updatable=false)
     private Producto producto;
 }

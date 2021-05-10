@@ -27,6 +27,7 @@ import ms.pedido.domain.Obra;
 import ms.pedido.domain.Pedido;
 import ms.pedido.domain.Producto;
 import ms.pedido.domain.DetallePedido;
+import ms.pedido.domain.EstadoPedido;
 import ms.pedido.service.ClienteService;
 import ms.pedido.service.PedidoService;
 import ms.pedido.service.ProductoService;
@@ -90,7 +91,7 @@ public class PedidoServiceImplTest {
 		}
 		
 		assertNull(excep);
-		assertEquals("ACEPTADO", pedidoResultado.getEstado().getEstado());
+		assertEquals(EstadoPedido.ACEPTADO, pedidoResultado.getEstado());
 		verify(pedidoRepository, times(1)).save(any(Pedido.class));
 	}
 	

@@ -38,27 +38,14 @@ public class PedidoServiceImpl implements PedidoService {
 			costoPedido += dp.getPrecio();
 		}
 		if(pendiente) {
-			EstadoPedido estado= new EstadoPedido();
-			estado.setId(2);
-			estado.setEstado("PENDIENTE");
-			nuevo.setEstado(estado);
+			nuevo.setEstado(EstadoPedido.PENDIENTE);
 		}
 		Integer idCliente= clienteService.findIdClienteByIdObra(nuevo.getObra().getId());
 		Double saldoCliente= clienteService.saldo(idCliente);
 		
-		if((saldoCliente-costoPedido) >= 0.0){
-			EstadoPedido estado= new EstadoPedido();
-			estado.setId(1);
-			estado.setEstado("ACEPTADO");
-			nuevo.setEstado(estado);
-		}
-		else if(clienteService.situacionCrediticia(idCliente)) {
-			EstadoPedido estado= new EstadoPedido();
-			estado.setId(1);
-			estado.setEstado("ACEPTADO");
-			nuevo.setEstado(estado);
-		}
-		else {
+		if((saldoCliente-costoPedido) >= 0.0 || clienteService.situacionCrediticia(idCliente)){
+			nuevo.setEstado(EstadoPedido.ACEPTADO);
+		}else {
 			throw new Exception("SU SALDO NO ES SUFICIENTE PARA REALIZAR EL PEDIDO");
 		}
 		

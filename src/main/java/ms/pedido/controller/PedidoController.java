@@ -24,6 +24,7 @@ import ms.pedido.dao.PedidoRepository;
 import ms.pedido.domain.DetallePedido;
 import ms.pedido.domain.EstadoPedido;
 import ms.pedido.domain.Pedido;
+import ms.pedido.message.queue.MessageSenderPedidos;
 import ms.pedido.service.ClienteService;
 import ms.pedido.service.PedidoService;
 import ms.pedido.service.impl.ClienteServiceImpl;
@@ -33,12 +34,14 @@ import ms.pedido.service.impl.ClienteServiceImpl;
 @Api(value="PedidoController", description= "Permite gestionar los pedidos")
 public class PedidoController {
 
-
 	@Autowired
 	PedidoService pedidoService;
 	
 	@Autowired
 	ClienteService clienteService;
+	
+	@Autowired
+	MessageSenderPedidos messageSenderPedidos;
 	
 	
 	@PostMapping
@@ -47,12 +50,13 @@ public class PedidoController {
 		if(nuevo.getObra()!=null) {
 			System.out.println("Pedido: "+nuevo);
 			try {
+				messageSenderPedidos.enviarMsg(nuevo.getDetalle().get(0));
 				nuevo = pedidoService.save(nuevo);
 			}
 			catch(Exception e) {
 				return ResponseEntity.status(200).body(e.getMessage());
 			}
-			return ResponseEntity.ok("EL PEDIDO SE HA CREAD CON EXITO");
+			return ResponseEntity.ok("EL PEDIDO SE HA CREADO CON EXITO");
 		}
 		else {
 			return ResponseEntity.badRequest().body("EL PEDIDO DEBE CONTENER DATOS DE LA OBRA");
@@ -84,6 +88,9 @@ public class PedidoController {
 		Optional<Pedido> pedidoDb = pedidoService.findPedidoById(idPedido);
         if(pedidoDb.isPresent()){
             pedidoService.update(pedidoDb.get(), pedido);
+            if(pedido.getEstado().equals(EstadoPedido.CONFIRMADO)) {
+            	messageSenderPedidos.enviarMsg(pedido.getDetalle().get(0));
+            }
             return ResponseEntity.ok(pedido);
         } else {
             return ResponseEntity.notFound().build();

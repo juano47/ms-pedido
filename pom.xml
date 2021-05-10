@@ -70,7 +70,17 @@
  			<artifactId>h2</artifactId>
 			 <scope>runtime</scope>
 		</dependency>
-		
+		<!-- Use MySQL Connector-Java -->
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>8.0.24</version>
+		</dependency>
+		<!-- RabbitMQ -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-amqp</artifactId>
+		</dependency>
 		
 	</dependencies>
 
