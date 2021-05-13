@@ -13,7 +13,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name="producto")
+@Table(name="pdr_material")
 public class Producto {
 	
 	@Id
