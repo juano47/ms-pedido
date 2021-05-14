@@ -48,9 +48,7 @@ public class PedidoController {
 	@ApiOperation(value="Crea un pedido")
 	public ResponseEntity<String> crear(@RequestBody Pedido nuevo){
 		if(nuevo.getObra()!=null) {
-			System.out.println("Pedido: "+nuevo);
 			try {
-				messageSenderPedidos.enviarMsg(nuevo.getDetalle().get(0));
 				nuevo = pedidoService.save(nuevo);
 			}
 			catch(Exception e) {
@@ -89,7 +87,7 @@ public class PedidoController {
         if(pedidoDb.isPresent()){
             pedidoService.update(pedidoDb.get(), pedido);
             if(pedido.getEstado().equals(EstadoPedido.CONFIRMADO)) {
-            	messageSenderPedidos.enviarMsg(pedido.getDetalle().get(0));
+            	messageSenderPedidos.enviarMsg(pedido.getDetalle());
             }
             return ResponseEntity.ok(pedido);
         } else {
