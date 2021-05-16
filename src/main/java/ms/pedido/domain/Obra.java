@@ -1,9 +1,6 @@
 package ms.pedido.domain;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
@@ -13,12 +10,11 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name="obra")
+@Table(name="PED_OBRA")
+//Para evitar sobreescribir tabla principal, la tabla se crea en ms_ped y no contendrá datos
 public class Obra {
 	
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name="id")
+	@Id //No indico la strategy, es solo lectura
     private Integer id;
     private String descripcion;
 }

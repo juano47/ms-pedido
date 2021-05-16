@@ -13,12 +13,11 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name="pdr_material")
+@Table(name="PED_MATERIAL")
+//Para evitar sobreescribir tabla principal, la tabla se crea en ms_ped y no contendrá datos
 public class Producto {
 	
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name="id")
+	@Id //No indico la strategy, es solo lectura
     private Integer id;
 	@Column(name="descripcion")
     private String descripcion;

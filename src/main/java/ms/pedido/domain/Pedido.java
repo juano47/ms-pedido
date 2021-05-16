@@ -22,7 +22,7 @@ import javax.persistence.Table;
 @Getter
 @Setter
 @Entity
-@Table(name="pedido")
+@Table(name="PED_PEDIDO")
 public class Pedido {
 	
 	@Id
