@@ -148,39 +148,49 @@ public class PedidoController {
 		return ResponseEntity.of(p);
 	}
 
+	
 	@GetMapping(path = "/obra/{idObra}")
-	@ApiOperation(value = "Busca un pedido por ID de obra")
-	public ResponseEntity<List<Pedido>> pedidoPorIdObra(@PathVariable Integer idObra) {
+	@ApiOperation(value = "Busca pedidos por ID de obra")
+	public ResponseEntity<List<Pedido>> pedidosPorIdObra(@PathVariable Integer idObra) {
 
 		// Por ahroa retorna una lista vacía porque no puedo implementar querys
 		// personalizadas
-		List<Pedido> pedidos = pedidoService.findPedidoByIdObra(idObra);
+		List<Pedido> pedidos = pedidoService.findPedidosByObraId(idObra);
 
 		return ResponseEntity.ok(pedidos);
 	}
 
-	@GetMapping(params = { "cuit", "idCliente" })
-	@ApiOperation(value = "Busca pedido por cuit y/o ID del cliente")
-	public ResponseEntity<List<Pedido>> obtenerEmpleados(@RequestParam(required = false) Integer cuit,
-			@RequestParam(required = false) Integer idCliente) {
+	@GetMapping(params = {"cuit", "idCliente"})
+	@ApiOperation(value="Busca pedidos por cuit y/o ID del cliente")
+	public ResponseEntity<List<Pedido>> pedidosPorCuitIdCliente(@RequestParam (required = false) Integer cuit, 
+			@RequestParam (required=false) Integer idCliente){
 
-		Integer idObra = clienteService.findObraByIdClienteOrCuit(idCliente, cuit);
+		Integer idObra= clienteService.findObraByIdClienteOrCuit(idCliente, cuit);
 
-		if (idObra != null) {
-			List<Pedido> pedidos = pedidoService.findPedidoByIdObra(idObra);
+		if(idObra!=null) {
+			List<Pedido> pedidos= pedidoService.findPedidosByObraId(idObra);
 			return ResponseEntity.ok(pedidos);
 		} else {
 			return ResponseEntity.notFound().build();
 		}
 	}
 
-	@GetMapping(path = "/{idPedido}/detalle/{idDetalle}")
-	@ApiOperation(value = "Busca un detalle de un pedido por ID")
-	public ResponseEntity<DetallePedido> detallePorId(@PathVariable Integer idPedido, @PathVariable Integer idDetalle) {
+
+	@PutMapping(path="/obra")
+	@ApiOperation(value="Busca pedidos pendientes para idObrasCliente y retorna un boolean")
+	public ResponseEntity<Boolean> existenPedidosPendientes(@RequestBody List<Integer> idObrasCliente){
+
+		return ResponseEntity.ok(pedidoService.existenPedidosPendientes(idObrasCliente));
+
+	}
+
+	@GetMapping(path="/{idPedido}/detalle/{idDetalle}")
+	@ApiOperation(value="Busca un detalle de un pedido por ID")
+	public ResponseEntity<DetallePedido> detallePorId(@PathVariable Integer idPedido, @PathVariable Integer idDetalle){
 
 		Optional<Pedido> p = pedidoService.findPedidoById(idPedido);
 
-		if (p.isPresent()) {
+		if(p.isPresent()) {
 			try {
 				DetallePedido detalle = pedidoService.findDetallePedidoById(p.get(), idDetalle);
 				return ResponseEntity.ok(detalle);

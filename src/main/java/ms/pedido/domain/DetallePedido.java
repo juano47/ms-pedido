@@ -31,7 +31,7 @@ public class DetallePedido implements Serializable {
     private Integer cantidad;
     private Double precio;
     
-	@ManyToOne(cascade = CascadeType.ALL)
+	@ManyToOne
 	@JoinColumn(name = "id", insertable=false, updatable=false)
     private Producto producto;
 }
