@@ -1,10 +1,13 @@
 package ms.pedido.service.impl;
 
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 
 import ms.pedido.dao.PedidoRepository;
@@ -29,6 +32,7 @@ public class PedidoServiceImpl implements PedidoService {
 
 	@Override
 	public Pedido save(Pedido nuevo) throws Exception {
+		nuevo.setFechaPedido(Instant.now());
 		nuevo.setEstado(EstadoPedido.NUEVO);
 		return pedidoRepository.save(nuevo);
 	}
@@ -139,6 +143,11 @@ public class PedidoServiceImpl implements PedidoService {
 			return p.getDetalle().get(index);
 		}
 		
+	}
+
+	@Override
+	public List<Pedido> findAll() {
+		return pedidoRepository.findAll();
 	}
 	
 	

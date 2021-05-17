@@ -45,7 +45,7 @@ public class PedidoController {
 
 	@PostMapping
 	@ApiOperation(value = "Crea un pedido")
-	public ResponseEntity<String> crear(@RequestBody Pedido nuevo) {
+	public ResponseEntity<?> crear(@RequestBody Pedido nuevo) {
 		if (nuevo.getObra() != null && nuevo.getDetalle() != null && !nuevo.getDetalle().isEmpty()
 				&& nuevo.getDetalle().get(0).getCantidad() != null && nuevo.getDetalle().get(0).getProducto() != null) {
 			try {
@@ -53,7 +53,7 @@ public class PedidoController {
 			} catch (Exception e) {
 				return ResponseEntity.status(500).body(e.getMessage());
 			}
-			return ResponseEntity.ok("EL PEDIDO SE HA CREADO CON EXITO");
+			return ResponseEntity.ok(nuevo);
 		} else {
 			return ResponseEntity.badRequest().body("EL PEDIDO DEBE CONTENER DATOS DE LA OBRA");
 		}
@@ -81,11 +81,6 @@ public class PedidoController {
 
 		Optional<Pedido> pedidoDb = pedidoService.findPedidoById(idPedido);
 		if (pedidoDb.isPresent()) {
-			if (pedido.getEstado().equals(EstadoPedido.CONFIRMADO)) {
-				// envio a cola de mensajes
-				messageSenderPedidos.enviarMsg(pedido.getDetalle());
-			}
-
 			// solo se puede cancelar pedidos en estados NUEVO; CONFIRMADO O PENDIENTE
 			if (pedido.getEstado().equals(EstadoPedido.CANCELADO)
 					&& pedidoDb.get().getEstado().equals(EstadoPedido.NUEVO)
@@ -95,7 +90,12 @@ public class PedidoController {
 						.body("Un pedido en estado " + pedidoDb.get().getEstado() +
 														" no puede ser cancelado");
 			}
+			EstadoPedido estado = pedido.getEstado();
 			pedidoService.update(pedidoDb.get(), pedido);
+			if (estado.equals(EstadoPedido.CONFIRMADO)) {
+				// envio a cola de mensajes
+				messageSenderPedidos.enviarMsg(pedido.getDetalle());
+			}
 			return ResponseEntity.ok(pedido);
 		} else {
 			return ResponseEntity.notFound().build();
@@ -127,6 +127,12 @@ public class PedidoController {
 		}
 
 		return ResponseEntity.ok().build();
+	}
+	
+	@GetMapping
+	@ApiOperation(value = "Busca todos los pedidos")
+	public List<Pedido> findAll() {
+		return pedidoService.findAll();
 	}
 
 	@GetMapping(path = "/{idPedido}")

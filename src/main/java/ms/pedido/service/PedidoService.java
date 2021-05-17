@@ -23,4 +23,6 @@ public interface PedidoService {
 	List<Pedido> findPedidoByIdObra(Integer idObra);
 	
 	DetallePedido findDetallePedidoById(Pedido p, Integer idDetallePedido) throws Exception;
+
+	List<Pedido> findAll();
 }
