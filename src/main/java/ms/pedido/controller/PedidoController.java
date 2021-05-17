@@ -31,7 +31,7 @@ import ms.pedido.service.impl.ClienteServiceImpl;
 
 @RestController
 @RequestMapping("api/pedido")
-@Api(value="PedidoController", description= "Permite gestionar los pedidos")
+@Api(value = "PedidoController", description = "Permite gestionar los pedidos")
 public class PedidoController {
 
 	@Autowired
@@ -43,64 +43,71 @@ public class PedidoController {
 	@Autowired
 	MessageSenderPedidos messageSenderPedidos;
 
-
 	@PostMapping
-	@ApiOperation(value="Crea un pedido")
-	public ResponseEntity<String> crear(@RequestBody Pedido nuevo){
-		if(nuevo.getObra()!=null) {
+	@ApiOperation(value = "Crea un pedido")
+	public ResponseEntity<String> crear(@RequestBody Pedido nuevo) {
+		if (nuevo.getObra() != null && nuevo.getDetalle() != null && !nuevo.getDetalle().isEmpty()
+				&& nuevo.getDetalle().get(0).getCantidad() != null && nuevo.getDetalle().get(0).getProducto() != null) {
 			try {
 				nuevo = pedidoService.save(nuevo);
-			}
-			catch(Exception e) {
-				return ResponseEntity.status(200).body(e.getMessage());
+			} catch (Exception e) {
+				return ResponseEntity.status(500).body(e.getMessage());
 			}
 			return ResponseEntity.ok("EL PEDIDO SE HA CREADO CON EXITO");
-		}
-		else {
+		} else {
 			return ResponseEntity.badRequest().body("EL PEDIDO DEBE CONTENER DATOS DE LA OBRA");
 		}
 
 	}
 
-
 	@PostMapping(path = "/{idPedido}/detalle}")
-	@ApiOperation(value="Agregar un detalle a un pedido")
+	@ApiOperation(value = "Agregar un detalle a un pedido")
 	public ResponseEntity<DetallePedido> agregarDetalle(@RequestBody DetallePedido nuevoDetalle,
-			@PathVariable Integer idPedido){
+			@PathVariable Integer idPedido) {
 
 		Optional<Pedido> pedido = pedidoService.findPedidoById(idPedido);
 
-		if(pedido.isPresent()) {
+		if (pedido.isPresent()) {
 			pedidoService.guardarNuevoDetallePedido(pedido, nuevoDetalle);
 			return ResponseEntity.ok(nuevoDetalle);
-		}else {
+		} else {
 			return ResponseEntity.notFound().build();
 		}
 	}
 
-	@PutMapping(path="/{idPedido}")
-	@ApiOperation(value="Modifica un pedido")
-	public ResponseEntity<Pedido> actualizar(@RequestBody Pedido pedido, 
-			@PathVariable Integer idPedido){
+	@PutMapping(path = "/{idPedido}")
+	@ApiOperation(value = "Modifica un pedido")
+	public ResponseEntity<?> actualizar(@RequestBody Pedido pedido, @PathVariable Integer idPedido) throws Exception {
 
 		Optional<Pedido> pedidoDb = pedidoService.findPedidoById(idPedido);
-		if(pedidoDb.isPresent()){
-			pedidoService.update(pedidoDb.get(), pedido);
-			if(pedido.getEstado().equals(EstadoPedido.CONFIRMADO)) {
+		if (pedidoDb.isPresent()) {
+			if (pedido.getEstado().equals(EstadoPedido.CONFIRMADO)) {
+				// envio a cola de mensajes
 				messageSenderPedidos.enviarMsg(pedido.getDetalle());
 			}
+
+			// solo se puede cancelar pedidos en estados NUEVO; CONFIRMADO O PENDIENTE
+			if (pedido.getEstado().equals(EstadoPedido.CANCELADO)
+					&& pedidoDb.get().getEstado().equals(EstadoPedido.NUEVO)
+					&& pedidoDb.get().getEstado().equals(EstadoPedido.CONFIRMADO)
+					&& pedidoDb.get().getEstado().equals(EstadoPedido.PENDIENTE)) {
+				return ResponseEntity.badRequest()
+						.body("Un pedido en estado " + pedidoDb.get().getEstado() +
+														" no puede ser cancelado");
+			}
+			pedidoService.update(pedidoDb.get(), pedido);
 			return ResponseEntity.ok(pedido);
 		} else {
 			return ResponseEntity.notFound().build();
 		}
 	}
 
-	@DeleteMapping(path="/{idPedido}")
-	@ApiOperation(value="Borra un pedido")
-	public ResponseEntity<Pedido> borrar(@PathVariable Integer idPedido){
+	@DeleteMapping(path = "/{idPedido}")
+	@ApiOperation(value = "Borra un pedido")
+	public ResponseEntity<Pedido> borrar(@PathVariable Integer idPedido) {
 
 		Optional<Pedido> pedidoDb = pedidoService.findPedidoById(idPedido);
-		if(pedidoDb.isPresent()){
+		if (pedidoDb.isPresent()) {
 			pedidoService.delete(pedidoDb.get());
 			return ResponseEntity.ok().build();
 		} else {
@@ -108,38 +115,41 @@ public class PedidoController {
 		}
 	}
 
-	@DeleteMapping(path="/{idPedido}/detalle/{idDetalle}")
-	@ApiOperation(value="Borra el detalle de un pedido")
-	public ResponseEntity<DetallePedido> borrarDetalle(@PathVariable Integer idPedido, @PathVariable Integer idDetalle){
+	@DeleteMapping(path = "/{idPedido}/detalle/{idDetalle}")
+	@ApiOperation(value = "Borra el detalle de un pedido")
+	public ResponseEntity<DetallePedido> borrarDetalle(@PathVariable Integer idPedido,
+			@PathVariable Integer idDetalle) {
 
 		try {
 			pedidoService.deleteDetallePedido(idPedido, idDetalle);
-		}
-		catch(Exception e) {
+		} catch (Exception e) {
 			return ResponseEntity.notFound().build();
 		}
 
 		return ResponseEntity.ok().build();
 	}
 
-	@GetMapping(path="/{idPedido}")
-	@ApiOperation(value="Busca un pedido por ID")
-	public ResponseEntity<Pedido> pedidoPorId(@PathVariable Integer idPedido){
+	@GetMapping(path = "/{idPedido}")
+	@ApiOperation(value = "Busca un pedido por ID")
+	public ResponseEntity<Pedido> pedidoPorId(@PathVariable Integer idPedido) {
 
-		Optional<Pedido> p= pedidoService.findPedidoById(idPedido);
+		Optional<Pedido> p = pedidoService.findPedidoById(idPedido);
 
-		if(p==null) {
+		if (p == null) {
 			return ResponseEntity.notFound().build();
 		}
 
 		return ResponseEntity.of(p);
 	}
 
-	@GetMapping(path="/obra/{idObra}")
-	@ApiOperation(value="Busca pedidos por ID de obra")
-	public ResponseEntity<List<Pedido>> pedidosPorIdObra(@PathVariable Integer idObra){
+	
+	@GetMapping(path = "/obra/{idObra}")
+	@ApiOperation(value = "Busca un pedido por ID de obra")
+	public ResponseEntity<List<Pedido>> pedidoPorIdObra(@PathVariable Integer idObra) {
 
-		List<Pedido> pedidos= pedidoService.findPedidosByObraId(idObra);
+		// Por ahroa retorna una lista vacía porque no puedo implementar querys
+		// personalizadas
+		List<Pedido> pedidos = pedidoService.findPedidoByIdObra(idObra);
 
 		return ResponseEntity.ok(pedidos);
 	}
@@ -154,8 +164,7 @@ public class PedidoController {
 		if(idObra!=null) {
 			List<Pedido> pedidos= pedidoService.findPedidosByObraId(idObra);
 			return ResponseEntity.ok(pedidos);
-		}
-		else {
+		} else {
 			return ResponseEntity.notFound().build();
 		}
 	}
@@ -177,17 +186,14 @@ public class PedidoController {
 
 		if(p.isPresent()) {
 			try {
-				DetallePedido detalle= pedidoService.findDetallePedidoById(p.get(), idDetalle);
+				DetallePedido detalle = pedidoService.findDetallePedidoById(p.get(), idDetalle);
 				return ResponseEntity.ok(detalle);
-			}
-			catch(Exception e) {
+			} catch (Exception e) {
 				return ResponseEntity.notFound().build();
 			}
-		}
-		else {
+		} else {
 			return ResponseEntity.notFound().build();
 		}
-
 
 	}
 }
