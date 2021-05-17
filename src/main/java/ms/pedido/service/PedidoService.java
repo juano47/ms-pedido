@@ -14,7 +14,7 @@ public interface PedidoService {
 
 	void guardarNuevoDetallePedido(Optional<Pedido> pedido, DetallePedido nuevoDetalle);
 
-	void update(Pedido pedido, Pedido pedido2);
+	void update(Pedido pedido, Pedido pedido2) throws Exception;
 
 	void delete(Pedido pedido);
 	

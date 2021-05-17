@@ -29,28 +29,8 @@ public class PedidoServiceImpl implements PedidoService {
 
 	@Override
 	public Pedido save(Pedido nuevo) throws Exception {
-		boolean pendiente= false;
-		Double costoPedido= 0.0;
-		for(DetallePedido dp : nuevo.getDetalle()) {
-			if(dp.getCantidad()> productoService.getStock(dp.getProducto().getId())) {
-				pendiente= true;
-			}
-			costoPedido += dp.getPrecio();
-		}
-		if(pendiente) {
-			nuevo.setEstado(EstadoPedido.PENDIENTE);
-		}
-		Integer idCliente= clienteService.findIdClienteByIdObra(nuevo.getObra().getId());
-		Double saldoCliente= clienteService.saldo(idCliente);
-		
-		if((saldoCliente-costoPedido) >= 0.0 || clienteService.situacionCrediticia(idCliente)){
-			nuevo.setEstado(EstadoPedido.ACEPTADO);
-		}else {
-			throw new Exception("SU SALDO NO ES SUFICIENTE PARA REALIZAR EL PEDIDO");
-		}
-		
-		pedidoRepository.save(nuevo);
-		return nuevo;
+		nuevo.setEstado(EstadoPedido.NUEVO);
+		return pedidoRepository.save(nuevo);
 	}
 
 	@Override
@@ -74,10 +54,33 @@ public class PedidoServiceImpl implements PedidoService {
 	}
 
 	@Override
-	public void update(Pedido pedido, Pedido pedido2) {
-		pedido2.setId(pedido.getId());
-		pedidoRepository.save(pedido2);
+	public void update(Pedido pedido, Pedido pedidoUpdate) throws Exception {
+		pedidoUpdate.setId(pedido.getId());
 		
+		boolean pendiente= false;
+		Double costoPedido= 0.0;
+		for(DetallePedido dp : pedidoUpdate.getDetalle()) {
+			if(dp.getCantidad()> productoService.getStock(dp.getProducto().getId())) {
+				pendiente= true;
+			}
+			costoPedido += dp.getPrecio();
+		}
+		if(pendiente) {
+			pedidoUpdate.setEstado(EstadoPedido.PENDIENTE);
+			pedidoRepository.save(pedidoUpdate);
+			
+		}else {
+			Integer idCliente= clienteService.findIdClienteByIdObra(pedidoUpdate.getObra().getId());
+			Double saldoCliente= clienteService.saldo(idCliente);
+			
+			if((saldoCliente-costoPedido) >= 0.0 || clienteService.situacionCrediticia(idCliente)){
+				pedidoUpdate.setEstado(EstadoPedido.ACEPTADO);
+			}else {
+				throw new Exception("SU SALDO NO ES SUFICIENTE PARA REALIZAR EL PEDIDO");
+			}
+		}
+		
+		pedidoRepository.save(pedidoUpdate);
 	}
 
 	@Override
