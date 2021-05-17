@@ -27,18 +27,18 @@ public class Pedido {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name="id")
+	@Column(name="id_pedido")
     private Integer id;
 	
 	@Column(name="fecha_pedido")
     private Instant fechaPedido;
 	
-	@ManyToOne(cascade = CascadeType.ALL)
-	@JoinColumn(name="id", insertable=false, updatable=false)
+	@ManyToOne
+	@JoinColumn(name="id_obra", insertable=false, updatable=false)
     private Obra obra;
 	
 	@OneToMany(orphanRemoval = true, cascade = CascadeType.ALL)
-	@JoinColumn(name="id", insertable=false, updatable=false)
+	@JoinColumn(name="id_detalle")
     private List<DetallePedido> detalle;
     
 	@Enumerated

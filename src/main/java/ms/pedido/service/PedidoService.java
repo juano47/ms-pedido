@@ -20,7 +20,9 @@ public interface PedidoService {
 	
 	void deleteDetallePedido(Integer idPedido, Integer idDetalle) throws Exception;
 	
-	List<Pedido> findPedidoByIdObra(Integer idObra);
-	
 	DetallePedido findDetallePedidoById(Pedido p, Integer idDetallePedido) throws Exception;
+
+	List<Pedido> findPedidosByObraId(Integer idObra);
+
+	Boolean existenPedidosPendientes(List<Integer> idObrasCliente);
 }

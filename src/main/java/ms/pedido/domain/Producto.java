@@ -17,7 +17,8 @@ import lombok.Setter;
 //Para evitar sobreescribir tabla principal, la tabla se crea en ms_ped y no contendrá datos
 public class Producto {
 	
-	@Id //No indico la strategy, es solo lectura
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 	@Column(name="descripcion")
     private String descripcion;

@@ -114,8 +114,8 @@ public class PedidoServiceImpl implements PedidoService {
 	}
 
 	@Override
-	public List<Pedido> findPedidoByIdObra(Integer idObra) {
-		return pedidoRepository.findByObra_Id(idObra).get();
+	public List<Pedido> findPedidosByObraId(Integer idObra) {
+		return pedidoRepository.findByObra_Id(idObra);
 	}
 
 	@Override
@@ -136,6 +136,21 @@ public class PedidoServiceImpl implements PedidoService {
 			return p.getDetalle().get(index);
 		}
 		
+	}
+
+
+	@Override
+	public Boolean existenPedidosPendientes(List<Integer> idObrasCliente) {
+
+		for(Integer id : idObrasCliente) {
+			for(Pedido pedido : this.pedidoRepository.findByObra_Id(id)) {
+				EstadoPedido estadoPedido = pedido.getEstado();
+				if(!(estadoPedido == EstadoPedido.CANCELADO || 
+						estadoPedido == EstadoPedido.ENTREGADO || estadoPedido == EstadoPedido.RECHAZADO))
+					return true;
+			}
+		}
+		return false;
 	}
 	
 	
