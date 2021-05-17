@@ -51,7 +51,7 @@ public class PedidoController {
 			try {
 				nuevo = pedidoService.save(nuevo);
 			} catch (Exception e) {
-				return ResponseEntity.status(200).body(e.getMessage());
+				return ResponseEntity.status(500).body(e.getMessage());
 			}
 			return ResponseEntity.ok("EL PEDIDO SE HA CREADO CON EXITO");
 		} else {
