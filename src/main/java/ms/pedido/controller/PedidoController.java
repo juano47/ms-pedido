@@ -144,12 +144,12 @@ public class PedidoController {
 
 	
 	@GetMapping(path = "/obra/{idObra}")
-	@ApiOperation(value = "Busca un pedido por ID de obra")
-	public ResponseEntity<List<Pedido>> pedidoPorIdObra(@PathVariable Integer idObra) {
+	@ApiOperation(value = "Busca pedidos por ID de obra")
+	public ResponseEntity<List<Pedido>> pedidosPorIdObra(@PathVariable Integer idObra) {
 
 		// Por ahroa retorna una lista vacía porque no puedo implementar querys
 		// personalizadas
-		List<Pedido> pedidos = pedidoService.findPedidoByIdObra(idObra);
+		List<Pedido> pedidos = pedidoService.findPedidosByObraId(idObra);
 
 		return ResponseEntity.ok(pedidos);
 	}
