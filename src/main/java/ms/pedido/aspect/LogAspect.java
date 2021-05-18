@@ -13,6 +13,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -25,6 +26,7 @@ import org.springframework.web.client.RestTemplate;
 
 import ms.pedido.domain.Obra;
 import ms.pedido.domain.Pedido;
+import ms.pedido.domain.Producto;
 
 @Aspect
 @Component
@@ -32,10 +34,11 @@ public class LogAspect {
 
 	private RestTemplate restTemplate = new RestTemplate();
 
-	String puertoMsUsuario = "8084";
-	String urlServer = "http://localhost";
-	String api = "api";
-	String server = urlServer+":"+puertoMsUsuario+"/"+api;
+	@Value("${endpoint.msUsuario.getObra}")
+	private String GET_OBRA_ENDPOINT;
+	
+	@Value("${endpoint.msProducto.getProducto}")
+	private String GET_PRODUCTO_ENDPOINT;
 
 	private static final Logger logger = LoggerFactory.getLogger(LogAspect. class);
 
@@ -76,12 +79,16 @@ public class LogAspect {
 		Optional<Pedido> resultadoOptional = (Optional<Pedido>) jp.proceed();
 
 		if(resultadoOptional.isPresent()) {
-
 			Pedido resultado = resultadoOptional.get(); 
-			logger.info("Se ejecutará HttpMethod.GET - URI: /api/obra/"+resultado.getObraId()+" - ms-usuario");
-
+			
+			resultado.getDetalle().forEach(detalle -> {
+				detalle.setProducto(findProductoPorId(detalle.getProductoId()));
+			});
+			
+			String url = GET_OBRA_ENDPOINT+resultado.getObraId(); 
+			logger.info("Se ejecutará HttpMethod.GET - URI: "+url+" - ms-usuario");
 			try {
-				ResponseEntity<Obra> respuesta = restTemplate.exchange(server+"/obra/"+resultado.getObraId(), HttpMethod.GET,new HttpEntity<>(null) , Obra.class);
+				ResponseEntity<Obra> respuesta = restTemplate.exchange(url, HttpMethod.GET,new HttpEntity<>(null) , Obra.class);
 
 				if(respuesta.getStatusCode().equals(HttpStatus.OK)) {
 					Obra nuevaObra = new Obra();
@@ -114,19 +121,45 @@ public class LogAspect {
 		List<Pedido> resultado = (List<Pedido>) jp.proceed();
 		List<Pedido> nuevoResultado = new ArrayList<Pedido>();
 
-		for(Pedido pedido : resultado) 
+		for(Pedido pedido : resultado) {
 			nuevoResultado.add(findObraPorId(pedido));
+			pedido.getDetalle().forEach(detalle -> {
+				detalle.setProducto(findProductoPorId(detalle.getProductoId()));
+			});
+		}
 
 		return nuevoResultado.stream().collect(Collectors.toList());
 	}
 
+	private Producto findProductoPorId(Integer productoId) {
+		Producto producto = null;
+		
+		String url = GET_PRODUCTO_ENDPOINT+productoId; 
+		logger.info("Se ejecutará HttpMethod.GET - URI: "+url+" - ms-producto");
+	
+		try {
+		ResponseEntity<Producto> respuesta = restTemplate.exchange(url, HttpMethod.GET,new HttpEntity<>(null) , Producto.class);
+
+		if(respuesta.getStatusCode().equals(HttpStatus.OK)) {
+			producto = respuesta.getBody();
+			logger.info("StatusCode respuesta ms-producto productoPorId="+productoId+": HttpStatus.OK");
+		}
+		else {
+			logger.info("StatusCode respuesta ms-producto productoPorId="+productoId+": "+respuesta.getStatusCode().toString());
+		}
+		
+		}catch(Exception e1) {
+			logger.info("StatusCode respuesta ms-producto productoPorId="+productoId+": "+e1.getLocalizedMessage());
+		}
+		return producto;
+	}
 
 	@Transactional(propagation=Propagation.REQUIRES_NEW)
 	private Pedido findObraPorId(Pedido resultado) {
-		logger.info("Se ejecutará HttpMethod.GET - URI: /api/obra/"+resultado.getObraId()+" - ms-usuario");
+		String url = GET_OBRA_ENDPOINT+resultado.getObraId(); 
+		logger.info("Se ejecutará HttpMethod.GET - URI: "+url+" - ms-usuario");
 		try {
-		ResponseEntity<Obra> respuesta = restTemplate.exchange(server+"/obra/"+resultado.getObraId(), HttpMethod.GET,new HttpEntity<>(null) , Obra.class);
-
+			ResponseEntity<Obra> respuesta = restTemplate.exchange(url, HttpMethod.GET,new HttpEntity<>(null) , Obra.class);
 		if(respuesta.getStatusCode().equals(HttpStatus.OK)) {
 			Obra nuevaObra = new Obra();
 			nuevaObra.setId(respuesta.getBody().getId());

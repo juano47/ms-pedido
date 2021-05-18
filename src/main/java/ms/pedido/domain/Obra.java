@@ -1,10 +1,10 @@
 package ms.pedido.domain;
 
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter
-@Setter
+@Data
 public class Obra {
 	
     private Integer id;
