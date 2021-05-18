@@ -34,6 +34,10 @@ public class PedidoServiceImpl implements PedidoService {
 	public Pedido save(Pedido nuevo) throws Exception {
 		nuevo.setFechaPedido(Instant.now());
 		nuevo.setEstado(EstadoPedido.NUEVO);
+		nuevo.setObraId(nuevo.getObra().getId());
+		for(DetallePedido detalle : nuevo.getDetalle())
+			detalle.setProductoId(detalle.getProducto().getId());
+		
 		return pedidoRepository.save(nuevo);
 	}
 
@@ -59,7 +63,12 @@ public class PedidoServiceImpl implements PedidoService {
 
 	@Override
 	public void update(Pedido pedido, Pedido pedidoUpdate) throws Exception {
+		
 		pedidoUpdate.setId(pedido.getId());
+		
+		pedidoUpdate.setObraId(pedido.getObra().getId());
+		for(DetallePedido detalle : pedidoUpdate.getDetalle())
+			detalle.setProductoId(detalle.getProducto().getId());
 		
 		boolean pendiente= false;
 		Double costoPedido= 0.0;
@@ -122,7 +131,7 @@ public class PedidoServiceImpl implements PedidoService {
 
 	@Override
 	public List<Pedido> findPedidosByObraId(Integer idObra) {
-		return pedidoRepository.findByObra_Id(idObra);
+		return pedidoRepository.findByObraId(idObra);
 	}
 
 	@Override
@@ -154,7 +163,7 @@ public class PedidoServiceImpl implements PedidoService {
 	public Boolean existenPedidosPendientes(List<Integer> idObrasCliente) {
 
 		for(Integer id : idObrasCliente) {
-			for(Pedido pedido : this.pedidoRepository.findByObra_Id(id)) {
+			for(Pedido pedido : this.pedidoRepository.findByObraId(id)) {
 				EstadoPedido estadoPedido = pedido.getEstado();
 				if(!(estadoPedido == EstadoPedido.CANCELADO || 
 						estadoPedido == EstadoPedido.ENTREGADO || estadoPedido == EstadoPedido.RECHAZADO))

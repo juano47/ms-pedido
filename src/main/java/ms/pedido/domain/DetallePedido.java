@@ -12,6 +12,9 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -21,17 +24,24 @@ import lombok.Setter;
 @Entity
 @Table(name="PED_DETALLE_PEDIDO")
 public class DetallePedido implements Serializable {
-	
+
 	private static final long serialVersionUID = 1L;
-	
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "id")
+	@Column(name = "id_detalle_pedido")
 	private Integer id;
-    private Integer cantidad;
-    private Double precio;
-    
+	private Integer cantidad;
+	private Double precio;
+
+	@Transient
+	private Producto producto;
+	
+	@Column(name="id_producto")
+	private Integer productoId;
+
 	@ManyToOne
-	@JoinColumn(name = "id", insertable=false, updatable=false)
-    private Producto producto;
+	@JoinColumn(name = "id_pedido")
+	@JsonBackReference
+	private Pedido pedido;
 }

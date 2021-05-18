@@ -6,10 +6,12 @@ import lombok.Setter;
 import java.time.Instant;
 import java.util.List;
 
+import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -18,6 +20,9 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Getter
 @Setter
@@ -33,12 +38,15 @@ public class Pedido {
 	@Column(name="fecha_pedido")
     private Instant fechaPedido;
 	
-	@ManyToOne
-	@JoinColumn(name="id_obra", insertable=false, updatable=false)
+	@Transient
     private Obra obra;
 	
-	@OneToMany(orphanRemoval = true, cascade = CascadeType.ALL)
-	@JoinColumn(name="id_detalle")
+	@Column(name="id_obra")
+	private Integer obraId;
+	
+	@Basic(fetch=FetchType.EAGER)
+	@OneToMany(orphanRemoval = true, mappedBy = "pedido", cascade = CascadeType.ALL)
+	@JsonManagedReference
     private List<DetallePedido> detalle;
     
 	@Enumerated
