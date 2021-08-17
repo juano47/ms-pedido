@@ -70,7 +70,7 @@ public class ControllerTest {
 	
 	@Test
 	void testGuardarPedidoObraEnNull() {
-		String server= urlServer+":"+apiPedido;
+		String server= urlServer+":"+puerto+"/"+apiPedido;
 		
 		p.setObra(null);
 		
@@ -82,8 +82,8 @@ public class ControllerTest {
 	
 	@Test
 	void testGuardarDetallePedidoPedidoNoEncontrado() {
-		
-		String server= urlServer+":"+apiPedido+"/2/detalle";
+
+		String server= urlServer+":"+puerto+"/"+apiPedido+"/2/detalle";
 		
 		Optional<Pedido> opt= Optional.empty();
 		
@@ -107,8 +107,8 @@ public class ControllerTest {
 	
 	@Test
 	void testActualizarPedidoPedidoNoEncontrado() {
-		
-		String server= urlServer+":"+apiPedido+"/2";
+
+		String server= urlServer+":"+puerto+"/"+apiPedido+"/2";
 		
 		Optional<Pedido> opt= Optional.empty();
 		
@@ -123,8 +123,8 @@ public class ControllerTest {
 	
 	@Test
 	void testBorrarPedidoPedidoNoEncontrado() {
-		
-		String server= urlServer+":"+apiPedido+"/2";
+
+		String server= urlServer+":"+puerto+"/"+apiPedido+"/2";
 		
 		Optional<Pedido> opt= Optional.empty();
 		

@@ -1,0 +1,16 @@
+version: "3.9"
+
+services:
+  pedidoService:
+    container_name: ms-pedido
+    image: ms-pedido:0.0.1-SNAPSHOT
+    ports:
+      - "8081:8081"
+    environment:
+      - "SPRING_PROFILES_ACTIVE=docker"
+    networks:
+      - network_tp
+
+networks:
+  network_tp:
+    driver: bridge
