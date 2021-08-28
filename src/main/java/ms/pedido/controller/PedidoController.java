@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.stream.IntStream;
 
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -43,6 +44,7 @@ public class PedidoController {
 	@Autowired
 	MessageSenderPedidos messageSenderPedidos;
 
+	@HystrixCommand(fallbackMethod = "pedidoVacio")
 	@PostMapping
 	@ApiOperation(value = "Crea un pedido")
 	public ResponseEntity<?> crear(@RequestBody Pedido nuevo) {
@@ -60,6 +62,7 @@ public class PedidoController {
 
 	}
 
+	@HystrixCommand(fallbackMethod = "detallePedidoVacio")
 	@PostMapping(path = "/{idPedido}/detalle}")
 	@ApiOperation(value = "Agregar un detalle a un pedido")
 	public ResponseEntity<DetallePedido> agregarDetalle(@RequestBody DetallePedido nuevoDetalle,
@@ -75,6 +78,7 @@ public class PedidoController {
 		}
 	}
 
+	@HystrixCommand(fallbackMethod = "pedidoVacio")
 	@PutMapping(path = "/{idPedido}")
 	@ApiOperation(value = "Modifica un pedido")
 	public ResponseEntity<?> actualizar(@RequestBody Pedido pedido, @PathVariable Integer idPedido) throws Exception {
@@ -102,6 +106,7 @@ public class PedidoController {
 		}
 	}
 
+	@HystrixCommand(fallbackMethod = "pedidoVacio")
 	@DeleteMapping(path = "/{idPedido}")
 	@ApiOperation(value = "Borra un pedido")
 	public ResponseEntity<Pedido> borrar(@PathVariable Integer idPedido) {
@@ -115,6 +120,7 @@ public class PedidoController {
 		}
 	}
 
+	@HystrixCommand(fallbackMethod = "detallePedidoVacio")
 	@DeleteMapping(path = "/{idPedido}/detalle/{idDetalle}")
 	@ApiOperation(value = "Borra el detalle de un pedido")
 	public ResponseEntity<DetallePedido> borrarDetalle(@PathVariable Integer idPedido,
@@ -128,13 +134,15 @@ public class PedidoController {
 
 		return ResponseEntity.ok().build();
 	}
-	
+
+	@HystrixCommand(fallbackMethod = "listaVacia")
 	@GetMapping
 	@ApiOperation(value = "Busca todos los pedidos")
 	public List<Pedido> findAll() {
 		return pedidoService.findAll();
 	}
 
+	@HystrixCommand(fallbackMethod = "pedidoVacio")
 	@GetMapping(path = "/{idPedido}")
 	@ApiOperation(value = "Busca un pedido por ID")
 	public ResponseEntity<Pedido> pedidoPorId(@PathVariable Integer idPedido) {
@@ -148,7 +156,7 @@ public class PedidoController {
 		return ResponseEntity.of(p);
 	}
 
-	
+	@HystrixCommand(fallbackMethod = "listaVacia")
 	@GetMapping(path = "/obra/{idObra}")
 	@ApiOperation(value = "Busca pedidos por ID de obra")
 	public ResponseEntity<List<Pedido>> pedidosPorIdObra(@PathVariable Integer idObra) {
@@ -160,6 +168,7 @@ public class PedidoController {
 		return ResponseEntity.ok(pedidos);
 	}
 
+	@HystrixCommand(fallbackMethod = "listaVacia")
 	@GetMapping(params = {"cuit", "idCliente"})
 	@ApiOperation(value="Busca pedidos por cuit y/o ID del cliente")
 	public ResponseEntity<List<Pedido>> pedidosPorCuitIdCliente(@RequestParam (required = false) Integer cuit, 
@@ -175,7 +184,7 @@ public class PedidoController {
 		}
 	}
 
-
+	@HystrixCommand(fallbackMethod = "defaultBoolean")
 	@PutMapping(path="/obra")
 	@ApiOperation(value="Busca pedidos pendientes para idObrasCliente y retorna un boolean")
 	public ResponseEntity<Boolean> existenPedidosPendientes(@RequestBody List<Integer> idObrasCliente){
@@ -184,6 +193,7 @@ public class PedidoController {
 
 	}
 
+	@HystrixCommand(fallbackMethod = "detallePedidoVacio")
 	@GetMapping(path="/{idPedido}/detalle/{idDetalle}")
 	@ApiOperation(value="Busca un detalle de un pedido por ID")
 	public ResponseEntity<DetallePedido> detallePorId(@PathVariable Integer idPedido, @PathVariable Integer idDetalle){
@@ -201,5 +211,21 @@ public class PedidoController {
 			return ResponseEntity.notFound().build();
 		}
 
+	}
+
+	public ResponseEntity<Pedido> pedidoVacio(){
+		return ResponseEntity.ok(new Pedido());
+	}
+
+	public ResponseEntity<DetallePedido> detallePedidoVacio(){
+		return ResponseEntity.ok(new DetallePedido());
+	}
+
+	public ResponseEntity<List<?>> listaVacia(){
+		return ResponseEntity.ok(new ArrayList<>());
+	}
+
+	public Boolean defaultBoolean(){
+		return false;
 	}
 }
